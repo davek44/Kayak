@@ -37,7 +37,9 @@ class Dropout(Differentiable):
         self._clear_value_cache()
 
     def reinstate_units(self):
-        self._mask = np.ones(self.X.shape)
+        # if X is a big sparse matrix, this blows up
+        #self._mask = np.ones(self.X.shape)
+        self._mask = 1
         self._clear_value_cache()
 
     def _compute_value(self):

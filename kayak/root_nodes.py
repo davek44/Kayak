@@ -6,6 +6,7 @@
 # Distributed under an MIT license. See license.txt file.
 
 import numpy as np
+from scipy.sparse import issparse
 from . import Differentiable
 
 class DataNode(Differentiable):
@@ -16,7 +17,9 @@ class DataNode(Differentiable):
         else:
             super(DataNode, self).__init__([batcher])
 
-        self._data    = np.atleast_1d(data)
+        # changes the shape of a sparse matrix
+        # self._data    = np.atleast_1d(data)
+        self._data = data
         self._batcher = batcher
 
     @property
@@ -32,7 +35,11 @@ class DataNode(Differentiable):
         if self._batcher is None:
             return self.data
         else:
-            return self.data[self._batcher.value,...]
+            # sending a dense version of a batch is no problem
+            if issparse(self.data):
+                return self.data[self._batcher.value,...].toarray()
+            else:
+                return self.data[self._batcher.value,...]
 
     def _local_grad(self, parent, d_out_d_self):
         raise Exception("Can't take gradient w.r.t. data")

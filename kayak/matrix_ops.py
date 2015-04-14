@@ -26,7 +26,9 @@ class MatMult(Differentiable):
         if A_val.shape[-1] != B_val.shape[0]:
             raise Exception("Cannot multiply %s by %s matrices." % (self.A.shape, self.B.shape))
 
-        return np.dot(self.A.value, self.B.value)
+        # sparse matrices know how to dot with others
+        #return np.dot(self.A.value, self.B.value)
+        return self.A.value.dot(self.B.value)
 
     def _local_grad(self, parent, d_out_d_self):
         if parent == 0:
