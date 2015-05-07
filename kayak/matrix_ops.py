@@ -191,18 +191,19 @@ class Transpose(Differentiable):
             return np.transpose(d_out_d_self, axes=np.argsort(self.axes))
 
 class Reshape(Differentiable):
-    __slots__ = ['A', 'new_shape']
+    __slots__ = ['A', 'new_shape', 'order']
 
-    def __init__(self, A, new_shape):
+    def __init__(self, A, new_shape, order='C'):
         super(Reshape, self).__init__((A,))
         self.A         = A
         self.new_shape = new_shape
+        self.order     = order
 
     def _compute_value(self):
-        return np.reshape(self.A.value, self.new_shape)
+        return np.reshape(self.A.value, self.new_shape, order=self.order)
 
     def _local_grad(self, parent, d_out_d_self):
-        return np.reshape(d_out_d_self, self.A.shape)
+        return np.reshape(d_out_d_self, self.A.shape, order=self.order)
 
 class Concatenate(Differentiable):
     __slots__ = ['axis']
