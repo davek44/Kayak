@@ -49,6 +49,17 @@ class HardReLU(Nonlinearity):
     def _local_grad(self, parent, d_out_d_self):
         return d_out_d_self * (self.X.value > 0)
 
+class ParReLU(Nonlinearity):
+    __slots__ = []
+    def __init__(self, X, a):
+        super(ParHardReLU, self).__init__(X)
+
+    def _compute_value(self):
+        return np.maximum(self.X.value, 0.0) + a*np.minimum(self.X.value, 0.0)
+
+    def _local_grad(self, parent, d_out_d_self):
+        return d_out_d_self * ((self.X.value > 0) + a*(self.X.value < 0))
+
 class TanH(Nonlinearity):
     __slots__ = []
     def __init__(self, X):
