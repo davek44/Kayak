@@ -49,16 +49,36 @@ class HardReLU(Nonlinearity):
     def _local_grad(self, parent, d_out_d_self):
         return d_out_d_self * (self.X.value > 0)
 
-class ParReLU(Nonlinearity):
-    __slots__ = []
+class LeakyReLU(Nonlinearity):
+    __slots__ = ['a']
     def __init__(self, X, a):
-        super(ParHardReLU, self).__init__(X)
+        super(LeakyReLU, self).__init__(X)
+        self.X = X
+        self.a = a
 
     def _compute_value(self):
-        return np.maximum(self.X.value, 0.0) + a*np.minimum(self.X.value, 0.0)
+        return np.maximum(self.X.value, 0.0) + self.a*np.minimum(self.X.value, 0.0)
 
     def _local_grad(self, parent, d_out_d_self):
-        return d_out_d_self * ((self.X.value > 0) + a*(self.X.value < 0))
+        return d_out_d_self * ((self.X.value > 0) + self.a*(self.X.value < 0))
+        
+class ParReLU(Differentiable):
+    __slots__ = ['X','a']
+    def __init__(self, X, a):
+        super(ParReLU, self).__init__((X,a))
+        self.X = X
+        self.a = a
+
+    def _compute_value(self):
+        return np.maximum(self.X.value, 0.0) + self.a.value[0]*np.minimum(self.X.value, 0.0)
+
+    def _local_grad(self, parent, d_out_d_self):
+        if parent == 0:
+            return d_out_d_self * ((self.X.value > 0) + self.a.value[0]*(self.X.value < 0))
+        elif parent == 1:
+            return np.atleast_1d(np.sum(d_out_d_self * self.X.value*(self.X.value < 0)))
+        else:
+            raise Exception("Not a parent of me")
 
 class TanH(Nonlinearity):
     __slots__ = []
