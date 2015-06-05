@@ -48,3 +48,22 @@ class LogMultinomialLoss(Loss):
 
     def _local_grad(self, parent, d_out_d_self):
         return - d_out_d_self * self.targs.value
+
+class LogBinomialLoss(Loss):
+    __slots__ = ['axis', 'keepdims', 'eps']
+    def __init__(self, predictions, targets, axis=None, keepdims=True, eps=1e-15):
+        super(LogBinomialLoss, self).__init__(predictions, targets)
+        self.axis = axis
+        self.keepdims = keepdims
+        self.eps = eps
+
+    def _compute_value(self):
+        Y = np.clip(self.preds.value, self.eps, 1-self.eps)
+        T = self.targs.value
+        return -np.sum(np.log(T*Y + (1-T)*(1-Y)),
+                       axis=self.axis, keepdims=self.keepdims)
+
+    def _local_grad(self, parent, d_out_d_self):
+        Y = np.clip(self.preds.value, self.eps, 1-self.eps)
+        T = self.targs.value
+        return -d_out_d_self * ((2*T - 1) / (2*T*Y - Y - T + 1))
