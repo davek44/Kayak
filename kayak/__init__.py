@@ -18,7 +18,7 @@ from matrix_ops     import MatAdd, MatMult, MatElemMult, MatSum, MatMean, Transp
 from elem_ops       import ElemAdd, ElemMult, ElemExp, ElemLog, ElemPower, ElemAbs
 from nonlinearities import SoftReLU, HardReLU, LeakyReLU, ParReLU, LogSoftMax, TanH, Logistic, InputSoftMax, SoftMax, L2Normalize, BatchNormalize
 from losses         import L2Loss, LogMultinomialLoss, LogBinomialLoss
-from dropout        import Dropout
+from dropout        import Dropout, GaussianNoise
 from regularizers   import L2Norm, L1Norm, Horseshoe, NExp
 from crossval       import CrossValidator
 from convolution    import Convolve1d, Pool, TopKPool

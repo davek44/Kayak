@@ -46,3 +46,38 @@ class Dropout(Differentiable):
     def _local_grad(self, parent, d_out_d_self):
         return d_out_d_self * self._mask
 
+
+class GaussianNoise(Differentiable):
+    __slots__ = ['X', 'stdev', '_rng', '_mask']
+
+    def __init__(self, X, stdev=1, rng=None, batcher=None):
+        if batcher is not None:
+            super(GaussianNoise, self).__init__([X, batcher])
+            batcher.add_dropout_node(self)
+        else:
+            super(GaussianNoise, self).__init__([X])
+
+        self.X         = X
+        self.stdev     = stdev
+
+        if rng is None:
+            self._rng = npr.RandomState()
+        else:
+            self._rng = rng
+
+        self.draw_new_mask()
+
+    def draw_new_mask(self):
+        self._mask = 1 + self.stdev*self._rng.randn(*self.X.shape)
+        self._clear_value_cache()
+
+    def reinstate_units(self):
+        self._mask = np.ones(self.X.shape)
+        self._clear_value_cache()
+
+    def _compute_value(self):
+        return self._mask * self.X.value
+
+    def _local_grad(self, parent, d_out_d_self):
+        return d_out_d_self * self._mask
+
