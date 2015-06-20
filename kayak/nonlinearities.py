@@ -168,17 +168,35 @@ class L2Normalize(Nonlinearity):
         return val * (d_out_d_self / X - np.sum(val2 * d_out_d_self, axis=self.axis, keepdims=True))
 
 class BatchNormalize(Nonlinearity):
-    __slots__ = ['X', 'nchannels']
+    __slots__ = ['X', 'nchannels', 'predict', 'mu', 'sig']
     def __init__(self, X, nchannels=1):
         super(BatchNormalize, self).__init__(X)
         self.nchannels = nchannels
+        self.predict = False
+        self.mu = None
+        self.sig = None
 
     def _compute_value(self):
         X   = self.X.value
         N   = X.shape[0]
         X   = X.reshape(N * self.nchannels, -1)
-        mu  = np.mean(X, axis=0, keepdims=True)
-        sig = np.mean((X - mu)**2, axis=0, keepdims=True) + 1e-6
+        
+        if self.predict:
+            if self.mu == None:
+                # compute and save
+                mu  = np.mean(X, axis=0, keepdims=True)
+                sig = np.mean((X - mu)**2, axis=0, keepdims=True) + 1e-6
+                self.mu = mu
+                self.sig = sig
+            else:
+                # use saved
+                mu = self.mu
+                sig = self.sig
+        else:
+            # compute
+            mu  = np.mean(X, axis=0, keepdims=True)
+            sig = np.mean((X - mu)**2, axis=0, keepdims=True) + 1e-6
+
         val = (X - mu) * sig**-0.5
         return val.reshape(N, -1)
 
