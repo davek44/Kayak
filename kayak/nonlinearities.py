@@ -182,7 +182,7 @@ class BatchNormalize(Nonlinearity):
         X   = X.reshape(N * self.nchannels, -1)
         
         if self.predict:
-            if self.mu == None:
+            if self.mu is None:
                 # compute and save
                 mu  = np.mean(X, axis=0, keepdims=True)
                 sig = np.mean((X - mu)**2, axis=0, keepdims=True) + 1e-6
